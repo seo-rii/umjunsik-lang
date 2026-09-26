@@ -15,21 +15,18 @@ go build -trimpath -o /tmp/umjunsik-lang-go .
 
 The executable accepts a source-file path and reads integer input from stdin.
 
-## Correctness fixes in this fork
+## Source-line, input, and arithmetic behavior
 
-The fixes live directly in the Go source; consumers do not need to apply a
-separate patch during their build.
-
-- Preserve every source-line slot, including the header, consecutive blank
+- Every source-line slot is preserved, including the header, consecutive blank
   lines, and a blank line following an empty assignment. LF, CRLF, and `~`
   separators keep the same numbering. Blank lines are no-op AST entries; the
   footer terminates parsing as EOF.
-- Translate the one-based `준` target using `target - 2` before the evaluator's
-  loop increment. This is paired with preserving source-line slots.
-- Read `식?` integers using whitespace-separated scanning, including several
-  integers on the same input line.
-- Count the next `.` or `,` token when accumulating an integer suffix. The old
-  implementation counted the first sign twice and omitted the last sign.
+- The one-based `준` target is translated using `target - 2` before the
+  evaluator's loop increment. This is paired with preserving source-line slots.
+- `식?` reads whitespace-separated integers, including several integers on the
+  same input line.
+- Integer suffixes count each `.` and `,` once. The previous implementation
+  counted the first sign twice and omitted the last sign.
 
 For example, this program prints `4`, not `6`:
 
@@ -40,9 +37,9 @@ For example, this program prints `4`, not `6`:
 이 사람이름이냐ㅋㅋ
 ```
 
-These are source-line, input, and arithmetic corrections, not a new language
-version. There is no instruction limit, forced program termination, sandbox
-policy change, or judge time-limit adjustment in the interpreter.
+These are corrections to existing language behavior, not a new language
+version. There is no instruction limit or forced program termination.
+Other language implementations in the repository are unchanged.
 
 ## Tests
 
@@ -78,18 +75,6 @@ contexts and three separators. Parser tests additionally check the offsets of
 all 510 nonempty suffixes after two variable forms and an input expression.
 The expected offsets come from sign counts, not a copy of the parsing algorithm.
 
-The CLI regressions are adapted from the tests accompanying
-`seo-rii/aonohako` PRs #43 and #45. They use independently written programs;
-no submitted user solution or private judge data is included.
-
-## Consumers such as aonohako
-
-After this change is merged here, a consumer can fetch this fork at the exact
-reviewed commit SHA, build `umjunsik-lang-go`, and run these tests. Remove the
-consumer's equivalent source-patching step when switching to that commit so the
-same fixes are not applied twice. Do not use a moving branch as a reproducible
-runtime dependency.
-
-This repository change does not update any consumer's runtime image, deploy an
-image, or rejudge existing submissions. Other language implementations in the
-repository are unchanged.
+The CLI regressions are adapted from tests developed for the aonohako judge
+runtime integration. They use independently written programs; no submitted
+user solution or private judge data is included.
