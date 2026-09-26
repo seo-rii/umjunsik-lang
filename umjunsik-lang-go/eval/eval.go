@@ -37,7 +37,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.JUN{Index: obj.(*object.Integer).Value}
 	case *ast.SIKQExpression:
 		var integer int
-		fmt.Scanln(&integer)
+		// Treat all whitespace as an input delimiter, not just newlines.
+		fmt.Scan(&integer)
 		return &object.Integer{Value: int64(integer)}
 	case *ast.SIKKIExpression:
 		obj := Eval(node.Value, env)
@@ -68,7 +69,9 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 
 		switch result := result.(type) {
 		case *object.JUN:
-			i = int(result.Index - 3)
+			// Lines include the header. Convert from one-based numbering and
+			// compensate for the for-loop increment after this iteration.
+			i = int(result.Index - 2)
 		case *object.Error:
 			return result
 		}
