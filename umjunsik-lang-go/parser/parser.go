@@ -76,9 +76,14 @@ func (p *Parser) parseLine() ast.Line {
 
 func (p *Parser) parseExpressionStatement() *ast.ExpressionLine {
 	line := &ast.ExpressionLine{Token: p.curToken}
+	// Blank lines (including the header newline) occupy a jump target slot.
+	if p.curTokenIs(token.NEWLINE) {
+		return line
+	}
 	line.Expression = p.parseExpression()
 
-	if p.peekTokenIs(token.NEWLINE) {
+	// An empty assignment may already have consumed its newline.
+	if !p.curTokenIs(token.NEWLINE) && p.peekTokenIs(token.NEWLINE) {
 		p.nextToken()
 	}
 
@@ -300,7 +305,7 @@ func (p *Parser) parseInfixIntegerExpression(left ast.Expression) ast.Expression
 	}
 
 	for p.peekTokenIs(token.PERIOD) || p.peekTokenIs(token.COMMA) {
-		switch p.curToken.Type {
+		switch p.peekToken.Type {
 		case token.PERIOD:
 			result++
 		case token.COMMA:
